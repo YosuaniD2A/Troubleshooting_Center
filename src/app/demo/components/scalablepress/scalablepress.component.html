@@ -1,0 +1,95 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <h1>Scalablepress</h1>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="col-12 card">
+            <p-toast position="top-center" key="tc"></p-toast>
+            <div *ngIf="orders.length === 0">
+                <p-messages [(value)]="messagesInfo" [enableService]="false" [closable]="false"></p-messages>
+            </div>
+            <div class="col-12 card" *ngIf="orders.length > 0">
+                <p-table [value]="orders" [(selection)]="selectedOrder" dataKey="id"
+                    [tableStyle]="{'min-width': '50rem'}">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 4rem" alignFrozen="left" pFrozenColumn [frozen]="true"></th>
+                            <th pSortableColumn="sku">SKU </th>
+                            <th pSortableColumn="order_number">Order number </th>
+                            <th pSortableColumn="size">Size </th>
+                            <th pSortableColumn="order_id">Order ID </th>
+                            <th pSortableColumn="order_date">Date </th>
+                            <th pSortableColumn="scalable_press_id">Scalablepress ID </th>
+                            <th pSortableColumn="scalable_press_sku">Scalablepress SKU </th>
+                            <th pSortableColumn="order_status">Status </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-order>
+                        <tr>
+                            <td alignFrozen="left" pFrozenColumn [frozen]="true">
+                                <p-tableRadioButton [value]="order" (click)="seeSuggestions()"></p-tableRadioButton>
+                            </td>
+                            <td>{{order.sku}}</td>
+                            <td>{{order.order_number}}</td>
+                            <td>{{order.size}}</td>
+                            <td>{{order.order_id}}</td>
+                            <td>{{order.order_date}}</td>
+                            <td>{{order.scalable_press_id}}</td>
+                            <td>{{order.scalable_press_sku}}</td>
+                            <td>{{order.order_status}}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+            <p-overlayPanel #op>
+                <p-table [value]="suggestions" [tableStyle]="{ 'max-width': '50rem' }">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>SKU</th>
+                            <th>Size</th>
+                            <th>Size translation</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-suggestion>
+                        <tr>
+                            <td>{{ suggestion.sku }}</td>
+                            <td>{{ suggestion.size }}</td>
+                            <td>{{ suggestion.size_translation }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-overlayPanel>
+
+            <div class="col-12 card">
+                <div class="flex gap-3 align-items-center mb-3">
+                    <h5 class="mb-0">Update Scalablepress dictionary</h5>
+                    <p-button pTooltip="Ver sugerencias" tooltipPosition="right" *ngIf="selectedOrder.id" icon="pi pi-eye" (click)="op.toggle($event)" styleClass="p-button-rounded p-button-text p-button-lg"></p-button>
+                </div>
+                <div class="p-fluid p-formgrid grid">
+                    <div class="field col-12 md:col-3">
+                        <label htmlFor="firstname2">SKU</label>
+                        <input pInputText id="firstname2" [disabled]="true" type="text" [(ngModel)]="selectedOrder.sku" />
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <label htmlFor="lastname2">Size</label>
+                        <p-dropdown [options]="sizeList" placeholder="Select a size" [(ngModel)]="selectedSize"></p-dropdown>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <label htmlFor="lastname2">Size_translation</label>
+                        <p-dropdown [options]="sizeTranslation" placeholder="Select a size transaltion" [(ngModel)]="selectedSizeTrans" ></p-dropdown>
+                    </div>
+                    <div class="field col-12 md:col-3">
+                        <label htmlFor="lastname2">Design_id</label>
+                        <input pInputText id="lastname2" [(ngModel)]="designId" type="text" />
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button pButton pRipple label="Insert" icon="pi pi-plus" [disabled]="disabled()" (click)="insertDesidnId()" class="p-button-primary"></button>
+                    <button pButton pRipple label="Run script" icon="pi pi-sync" class="p-button-secondary"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

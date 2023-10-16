@@ -1,0 +1,443 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <p-toast position="top-center" key="tc"></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <h1 class="mb-0">Sales Reports</h1>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import"
+                        chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
+                    <button pButton pRipple label="Export" [disabled]="!stateSearch" icon="pi pi-upload"
+                        class="p-button-danger" (click)="exportCSV()"></button>
+                </ng-template>
+            </p-toolbar>
+
+            <div class="flex gap-3">
+                <div class="field">
+                    <span class="p-float-label">
+                        <p-calendar inputId="calendar" [(ngModel)]="initialDate" dateFormat="yy.mm.dd"></p-calendar>
+                        <label for="calendar">Fecha de inicio</label>
+                    </span>
+                </div>
+                <div class="field">
+                    <span class="p-float-label">
+                        <p-calendar inputId="calendar" [(ngModel)]="finalDate" dateFormat="yy.mm.dd"></p-calendar>
+                        <label for="calendar">Fecha de fin</label>
+                    </span>
+                </div>
+                <p-button icon="pi pi-search" [loading]="loading[4]" (onClick)="load(4)"></p-button>
+            </div>
+            <div>
+                <div class="">
+                    <p-panel styleClass="w-full" header="Filters" [toggleable]="true">
+                        <div class="grid align-items-center">
+                            <div class="col-5 justify-content-center">
+                                <p-dropdown styleClass="w-12" [options]="storesItems" optionLabel="name"
+                                    [(ngModel)]="selectedStore" placeholder="Select a store"
+                                    [showClear]="true"></p-dropdown>
+                            </div>
+                            <p-divider class="col-2" layout="vertical">
+                                <b>OR</b>
+                            </p-divider>
+                            <div class="col-5">
+                                <p-dropdown styleClass="w-12" [options]="marksItems" optionLabel="name"
+                                    [(ngModel)]="selectedMark" placeholder="Select a mark"
+                                    [showClear]="true"></p-dropdown>
+                            </div>
+                        </div>
+                    </p-panel>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 lg:col-6 xl:col-4">
+        <div class="card bg-green-50 mb-0">
+            <div class="flex justify-content-between">
+                <div>
+                    <span class="block text-500 font-medium mb-3">Revenue</span>
+                    <div class="text-900 font-medium text-2xl"
+                        *ngIf="(salesSummaryGeneral.length === 0 && salesSummary.length === 0); else elseRevenue"> 0
+                    </div>
+                    <ng-template #elseRevenue>
+                        <div class="text-900 font-medium text-2xl">
+                            {{
+                            salesSummaryGeneral.length > 0
+                            ? salesSummaryGeneral[0].revenue
+                            : salesSummary[0].revenue
+                            }}</div>
+                    </ng-template>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-green-100 border-round"
+                    [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-money-bill text-green-500 text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 lg:col-6 xl:col-4">
+        <div class="card bg-blue-50 mb-0">
+            <div class="flex justify-content-between">
+                <div>
+                    <span class="block text-500 font-medium mb-3">Orders</span>
+                    <div class="text-900 font-medium text-2xl"
+                        *ngIf="(salesSummaryGeneral.length === 0 && salesSummary.length === 0); else elseOrders">0</div>
+                    <ng-template #elseOrders>
+                        <div class="text-900 font-medium text-2xl">
+                            {{
+                            salesSummaryGeneral.length > 0
+                            ? salesSummaryGeneral[0].orders
+                            : salesSummary[0].orders
+                            }}</div>
+                    </ng-template>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-blue-100 border-round"
+                    [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-shopping-cart text-blue-500 text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 lg:col-6 xl:col-4">
+        <div class="card bg-red-50 mb-0">
+            <div class="flex justify-content-between">
+                <div>
+                    <span class="block text-500 font-medium mb-3">Units</span>
+                    <div class="text-900 font-medium text-2xl"
+                        *ngIf="(salesSummaryGeneral.length === 0 && salesSummary.length === 0); else elseUnits">0</div>
+                    <ng-template #elseUnits>
+                        <div class="text-900 font-medium text-2xl">
+                            {{
+                            salesSummaryGeneral.length > 0
+                            ? salesSummaryGeneral[0].items
+                            : salesSummary[0].units
+                            }}</div>
+                    </ng-template>
+                </div>
+                <div class="flex align-items-center justify-content-center bg-red-100 border-round"
+                    [ngStyle]="{width: '2.5rem', height: '2.5rem'}">
+                    <i class="pi pi-hashtag text-red-500 text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <p-tabView styleClass="tabview-custom" *ngIf="(salesByStore.length === 0 && salesByMark.length === 0) ; else elseTabView2">
+                <p-tabPanel>
+                    <ng-template pTemplate="header">
+                        <i class="pi pi-calendar"></i>
+                        <span class="ml-2">Summary of Date</span>
+                    </ng-template>
+                    <div class="col-12">
+                        <div class="card">
+                            <h5>Summary of Date</h5>
+                            <p-toast></p-toast>
+                            <p-table [value]="salesPeriod" dataKey="name" [expandedRowKeys]="expandedRows"
+                                responsiveLayout="scroll" [paginator]="true" [rows]="10"
+                                [rowsPerPageOptions]="[15, 25, 35]"
+                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="day">Day <p-sortIcon field="day"></p-sortIcon></th>
+                                        <th pSortableColumn="revenue">Revenue <p-sortIcon field="revenue"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="revenue_perc">% <p-sortIcon
+                                                field="revenue_perc"></p-sortIcon></th>
+                                        <th pSortableColumn="orders">Orders <p-sortIcon field="orders"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="orders_perc">% <p-sortIcon
+                                                field="orders_perc"></p-sortIcon></th>
+                                        <th pSortableColumn="units">Units <p-sortIcon field="units"></p-sortIcon></th>
+                                        <th pSortableColumn="units_perc">% <p-sortIcon field="units_perc"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-periods let-expanded="expanded">
+                                    <tr class="thin-rows">
+                                        <td style="min-width: 12rem;">{{periods.summary}}</td>
+                                        <td style="min-width: 10rem;">{{periods.revenue}}</td>
+                                        <td style="min-width: 10rem;">{{((periods.revenue / salesSummaryGeneral[0].revenue) *
+                                            100).toFixed(2) }} %</td>
+                                        <td style="min-width: 10rem;">{{periods.orders}}</td>
+                                        <td style="min-width: 10rem;">{{((periods.orders / salesSummaryGeneral[0].orders) *
+                                            100).toFixed(2) }} %</td>
+                                        <td style="min-width: 10rem;">{{periods.items}}</td>
+                                        <td style="min-width: 10rem;">{{((periods.items / salesSummaryGeneral[0].items) *
+                                            100).toFixed(2) }} %</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </p-tabPanel>
+                <p-tabPanel>
+                    <ng-template pTemplate="header">
+                        <i class="pi pi-box"></i>
+                        <span class="ml-2">Platforms</span>
+                    </ng-template>
+                    <div class="col-12">
+                        <div class="card">
+                            <h5>Platforms</h5>
+                            <p-toast></p-toast>
+                            <p-table [value]="salesStores" dataKey="name" [expandedRowKeys]="expandedRows"
+                                responsiveLayout="scroll" [paginator]="true" [rows]="10"
+                                [rowsPerPageOptions]="[15, 25, 35]"
+                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="day">Stores <p-sortIcon field="day"></p-sortIcon></th>
+                                        <th pSortableColumn="revenue">Revenue <p-sortIcon field="revenue"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="revenue_perc">% <p-sortIcon
+                                                field="revenue_perc"></p-sortIcon></th>
+                                        <th pSortableColumn="orders">Orders <p-sortIcon field="orders"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="orders_perc">% <p-sortIcon
+                                                field="orders_perc"></p-sortIcon></th>
+                                        <th pSortableColumn="units">Units <p-sortIcon field="units"></p-sortIcon></th>
+                                        <th pSortableColumn="units_perc">% <p-sortIcon field="units_perc"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-stores let-expanded="expanded">
+                                    <tr class="thin-rows">
+                                        <td style="min-width: 12rem;">{{stores.summary}}</td>
+                                        <td style="min-width: 10rem;">{{stores.revenue}}</td>
+                                        <td style="min-width: 10rem;">{{((stores.revenue / salesSummaryGeneral[0].revenue) *
+                                            100).toFixed(2) }} %</td>
+                                        <td style="min-width: 10rem;">{{stores.orders}}</td>
+                                        <td style="min-width: 10rem;">{{((stores.orders / salesSummaryGeneral[0].orders) *
+                                            100).toFixed(2) }} %</td>
+                                        <td style="min-width: 10rem;">{{stores.items}}</td>
+                                        <td style="min-width: 10rem;">{{((stores.items / salesSummaryGeneral[0].items) *
+                                            100).toFixed(2) }} %</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </p-tabPanel>
+                <p-tabPanel>
+                    <ng-template pTemplate="header">
+                        <i class="pi pi-th-large"></i>
+                        <span class="ml-2">Categories</span>
+                    </ng-template>
+                    <!--  ----------------------------------------------------------------- -->
+                    <div class="col-12">
+                        <div class="card">
+                            <h5>Categories</h5>
+                            <p-toast></p-toast>
+                            <p-table [value]="salesBrands" dataKey="name" [tableStyle]="{ 'min-width': '60rem' }"
+                                [paginator]="true" [rows]="10" [rowsPerPageOptions]="[15, 25, 35]"
+                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 5rem"></th>
+                                        <th pSortableColumn="day">Categories<p-sortIcon field="day"></p-sortIcon></th>
+                                        <th pSortableColumn="revenue">Revenue <p-sortIcon field="revenue"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="revenue_perc">% <p-sortIcon
+                                                field="revenue_perc"></p-sortIcon></th>
+                                        <th pSortableColumn="orders">Orders <p-sortIcon field="orders"></p-sortIcon>
+                                        </th>
+                                        <th pSortableColumn="orders_perc">% <p-sortIcon
+                                                field="orders_perc"></p-sortIcon></th>
+                                        <th pSortableColumn="units">Units <p-sortIcon field="units"></p-sortIcon></th>
+                                        <th pSortableColumn="units_perc">% <p-sortIcon field="units_perc"></p-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-brands let-expanded="expanded">
+                                    <tr>
+                                        <td>
+                                            <button type="button"
+                                                *ngIf="brands.summary == 'Shutterstock'; else elseSpace" pButton pRipple
+                                                [pRowToggler]="brands"
+                                                class="p-button-text p-button-rounded p-button-plain"
+                                                [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></button>
+                                            <ng-template #elseSpace>
+                                        <td style="width: 5rem"></td>
+                                </ng-template>
+                                </td>
+                                <td style="min-width: 10rem;">{{brands.summary}}</td>
+                                <td style="min-width: 10rem;">{{brands.revenue}}</td>
+                                <td style="min-width: 10rem;">{{((brands.revenue / salesSummaryGeneral[0].revenue) *
+                                    100).toFixed(2) }} %</td>
+                                <td style="min-width: 10rem;">{{brands.orders}}</td>
+                                <td style="min-width: 10rem;">{{((brands.orders / salesSummaryGeneral[0].orders) *
+                                    100).toFixed(2) }} %</td>
+                                <td style="min-width: 10rem;">{{brands.items}}</td>
+                                <td style="min-width: 10rem;">{{((brands.items / salesSummaryGeneral[0].items) *
+                                    100).toFixed(2) }} %</td>
+                                </tr>
+                                </ng-template>
+                                <ng-template pTemplate="rowexpansion" let-brands>
+                                    <tr *ngIf="brands.summary == 'Shutterstock'">
+                                        <td colspan="7">
+                                            <div class="p-3 ml-4">
+                                                <p-table [value]="salesShutterstock" dataKey="id"
+                                                    *ngIf="brands.summary == 'Shutterstock'">
+                                                    <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 4rem"></th>
+                                        <th pSortableColumn="revenue">License </th>
+                                        <th pSortableColumn="revenue">Revenue </th>
+                                        <th pSortableColumn="revenue_perc">% </th>
+                                        <th pSortableColumn="orders">Orders </th>
+                                        <th pSortableColumn="orders_perc">% </th>
+                                        <th pSortableColumn="units">Units </th>
+                                        <th pSortableColumn="units_perc">% </th>
+                                        <th style="width: 4rem"></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-order>
+                                    <tr class="thin-rows" *ngIf="order.id_sstk !== null">
+                                        <td style="width: 4rem"></td>
+                                        <td style="min-width: 10rem;">{{order.id_sstk}}</td>
+                                        <td style="min-width: 10rem;">{{order.revenue}}</td>
+                                        <td style="min-width: 10rem;">{{((order.revenue / salesSummaryGeneral[0].revenue) *
+                                            100).toFixed(2) }} %</td>
+                                        <td style="min-width: 10rem;">0</td>
+                                        <td style="min-width: 10rem;">0 %</td>
+                                        <td style="min-width: 10rem;">{{order.quantity}}</td>
+                                        <td style="min-width: 10rem;">{{((order.quantity / salesSummaryGeneral[0].items) *
+                                            100).toFixed(2) }} %</td>
+                                        <td style="width: 4rem"></td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                        </td>
+                        </tr>
+                        </ng-template>
+                        </p-table>
+                    </div>
+        </div>
+        </p-tabPanel>
+        </p-tabView>
+        <ng-template #elseTabView2>
+            <p-tabView styleClass="tabview-custom" *ngIf="selectedStore !== null && selectedMark == null">
+                <p-tabPanel [selected]="true">
+                    <ng-template pTemplate="header">
+                        <i class="pi pi-box"></i>
+                        <span class="ml-2">Platforms</span>
+                    </ng-template>
+                    <div class="col-12">
+                        <div class="card">
+                            <p-toast></p-toast>
+                            <p-table [value]="salesByStore" dataKey="name" responsiveLayout="scroll" [paginator]="true"
+                                [rows]="5" [rowsPerPageOptions]="[5, 10, 25]"
+                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="sku">SKU<p-sortIcon field="sku"></p-sortIcon></th>
+                                        <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
+                                        <th pSortableColumn="order_date">Order Date <p-sortIcon
+                                                field="order_date"></p-sortIcon></th>
+                                        <th pSortableColumn="territory">Territory <p-sortIcon
+                                                field="territory"></p-sortIcon></th>
+                                        <th pSortableColumn="quantity">Quantity <p-sortIcon
+                                                field="quantity"></p-sortIcon></th>
+                                        <th pSortableColumn="unit_price">Unit price <p-sortIcon
+                                                field="unit_price"></p-sortIcon></th>
+                                        <th pSortableColumn="total_sales">Total sales <p-sortIcon
+                                                field="total_sales"></p-sortIcon></th>
+                                        <th pSortableColumn="royalty_rate">Royalty rate</th>
+                                        <th pSortableColumn="total_royalties">Total royalties</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-sale let-expanded="expanded">
+                                    <tr class="thin-rows">
+                                        <td style="min-width: 10rem;">{{sale.sku}}</td>
+                                        <td style="min-width: 10rem;">{{sale.title}}</td>
+                                        <td style="min-width: 10rem;">{{dataFromString(sale.order_date)}}</td>
+                                        <td style="min-width: 10rem;">{{sale.territory}}</td>
+                                        <td style="min-width: 10rem;">{{sale.quantity}}</td>
+                                        <td style="min-width: 10rem;">{{sale.unit_price}}</td>
+                                        <td style="min-width: 10rem;">{{sale.total_sales}}</td>
+                                        <td style="min-width: 10rem;">{{sale.royalty_rate}}</td>
+                                        <td style="min-width: 10rem;">{{sale.total_royalties}}</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </p-tabPanel>
+            </p-tabView>
+            <p-tabView styleClass="tabview-custom" *ngIf="selectedStore == null && selectedMark !== null">
+                <p-tabPanel [selected]="true">
+                    <ng-template pTemplate="header">
+                        <i class="pi pi-box"></i>
+                        <span class="ml-2">Marks</span>
+                    </ng-template>
+                    <div class="col-12">
+                        <div class="card">
+                            <p-toast></p-toast>
+                            <p-table [value]="salesByMark" dataKey="name" responsiveLayout="scroll" [paginator]="true"
+                                [rows]="5" [rowsPerPageOptions]="[5, 10, 25]"
+                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th pSortableColumn="sku">SKU<p-sortIcon field="sku"></p-sortIcon></th>
+                                        <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
+                                        <th pSortableColumn="order_date">Order Date <p-sortIcon
+                                                field="order_date"></p-sortIcon></th>
+                                        <th pSortableColumn="platform">Platform <p-sortIcon
+                                                field="platform"></p-sortIcon></th>
+                                        <th pSortableColumn="territory">Territory <p-sortIcon
+                                                field="territory"></p-sortIcon></th>
+                                        <th pSortableColumn="quantity">Quantity <p-sortIcon
+                                                field="quantity"></p-sortIcon></th>
+                                        <th pSortableColumn="unit_price">Unit price <p-sortIcon
+                                                field="unit_price"></p-sortIcon></th>
+                                        <th pSortableColumn="total_sales">Total sales <p-sortIcon
+                                                field="total_sales"></p-sortIcon></th>
+                                        <th pSortableColumn="royalty_rate">Royalty rate</th>
+                                        <th pSortableColumn="total_royalties">Total royalties</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-mark let-expanded="expanded">
+                                    <tr class="thin-rows">
+                                        <td style="min-width: 10rem;">{{mark.sku}}</td>
+                                        <td style="min-width: 10rem;">{{mark.title}}</td>
+                                        <td style="min-width: 10rem;">{{dataFromString(mark.order_date)}}</td>
+                                        <td style="min-width: 10rem;">{{mark.platform}}</td>
+                                        <td style="min-width: 10rem;">{{mark.territory}}</td>
+                                        <td style="min-width: 10rem;">{{mark.quantity}}</td>
+                                        <td style="min-width: 10rem;">{{mark.unit_price}}</td>
+                                        <td style="min-width: 10rem;">{{mark.total_sales}}</td>
+                                        <td style="min-width: 10rem;">{{mark.royalty_rate}}</td>
+                                        <td style="min-width: 10rem;">{{mark.total_royalties}}</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+                </p-tabPanel>
+            </p-tabView>
+        </ng-template>
+    </div>
+</div>
+
+<div class="col-12">
+
+    <div class="card" *ngIf="(chartDataCurrentYear.length > 0 && chartDataLastYear.length > 0); else elseSpinner">
+        <h5>Sales comparison</h5>
+        <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
+    </div>
+    <ng-template #elseSpinner>
+        <div class="card flex gap-5 align-items-center">
+            <p-progressSpinner></p-progressSpinner>
+            <h3>Loading comparative data from the previous year...</h3>
+        </div>
+    </ng-template>
+</div>
+</div>

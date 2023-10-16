@@ -1,0 +1,125 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast position="top-center" key="tc"></p-toast>
+            <p-toast position="bottom-center" key="bc"></p-toast>           
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <h1 class="mb-0 mr-2">Shutterstock</h1>
+                    </div>
+                    <p-dropdown [options]="dropdownItems" optionLabel="name"
+                        [(ngModel)]="selectedLicenseType"></p-dropdown>
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <!-- <p-fileUpload (onUpload)="onFileUpload($event)" mode="basic" [auto]="true" accept=".csv" maxFileSize="1000000" label="Import"
+                        chooseLabel="Choose" class="mr-2 inline-block"></p-fileUpload> -->
+                    <p-fileUpload #uploader mode="basic" chooseLabel="Choose" class="mr-2 inline-block" accept=".csv"
+                        [customUpload]="false" (onSelect)="onFileSelected($event)"></p-fileUpload>
+                    <p-button icon="pi pi-times" class="mr-2" *ngIf="selectedFile" (click)="cleanUploader()"></p-button>
+                    <!-- <button pButton pRipple label="Export" icon="pi pi-download" class="p-button-danger"
+                        (click)="dt.exportCSV()"></button> -->
+                </ng-template>
+            </p-toolbar>
+            <div>
+                <div *ngIf="selectedFile && (imageList.length == 0 && imagesWithErrors.length == 0)">
+                    <p-progressBar mode="indeterminate" [style]="{ height: '6px' }"></p-progressBar>
+                </div>
+                <div *ngIf="imageList.length == 0 && !selectedFile">
+                    <p-messages [(value)]="messagesInfo" [enableService]="false" [closable]="false"></p-messages>
+                </div>
+                <div *ngIf="imageList.length > 0 && imagesWithErrors.length > 0 && selectedFile">
+                    <p-messages [(value)]="messagesWarn" [enableService]="false" [closable]="false"></p-messages>
+                </div>
+                <div *ngIf="imageList.length == 0 && imagesWithErrors.length > 0 && selectedFile">
+                    <p-messages [(value)]="messagesError" [enableService]="false" [closable]="false"></p-messages>
+                </div>
+
+            </div>
+            
+            <div *ngIf="imageList.length > 0">
+                <p-table #dt [value]="imageList" [columns]="cols" responsiveLayout="scroll" [rows]="5"
+                [globalFilterFields]="['shutterstock_id','categories','keywords', 'displayname']" [paginator]="true"
+                [rowsPerPageOptions]="rowsPerPageOptions" [showCurrentPageReport]="true"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" selectionMode="multiple"
+                [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Image metadata</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                                class="w-full sm:w-auto" />
+                        </span>
+                        <button pButton pRipple icon="pi pi-download" pTooltip="Download CSV" tooltipPosition="top" class="p-button-danger"
+                        (click)="dt.exportCSV()"></button>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th pSortableColumn="shutterstock_id">Image ID <p-sortIcon field="shutterstock_id"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="description">Description <p-sortIcon field="description"></p-sortIcon></th>
+                        <th pSortableColumn="categories">Categories <p-sortIcon field="categories"></p-sortIcon></th>
+                        <th pSortableColumn="keywords">Keywords <p-sortIcon field="keywords"></p-sortIcon></th>
+                        <th pSortableColumn="displayname">Displayname <p-sortIcon field="displayname"></p-sortIcon></th>
+                        <th pSortableColumn="is_licensable">Licensable <p-sortIcon field="is_licensable"></p-sortIcon>
+                        </th>
+                        <th pSortableColumn="filename">Filename <p-sortIcon field="filename"></p-sortIcon>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-image>
+                    <tr>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Image ID</span>
+                            {{image.shutterstock_id}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Description</span>
+                            {{image.description}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Categories</span>
+                            {{image.categories}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">Keywords</span>
+                            {{image.keywords | split }}
+                        </td>
+                        <td style="width:14%; min-width: 10rem;">
+                            <span class="p-column-title">Displayname</span>
+                            {{image.displayname}}
+                        </td>
+                        <td style="width:14%; min-width: 10rem;">
+                            <span class="p-column-title">Licensable</span>
+                            {{image.is_licensable}}
+                        </td>
+                        <td style="width:14%; min-width: 10rem;">
+                            <span class="p-column-title">Filename</span>
+                            {{image.filename}}
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            </div>
+
+            <p-toolbar styleClass="mt-4">
+                <ng-template pTemplate="left">
+                    <span>
+                        <p><strong>Ruta de descarga: </strong></p>
+                        <p>C:\Users\yborg\OneDrive\Documents\Proyectos activos\Dashboard D2America\Troubleshooting_bknd\download\</p>
+                    </span>
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <div class="my-2">
+                        <p-splitButton label="Options" icon="pi pi-plus" [disabled]="!downloable" [model]="items"
+                            styleClass="p-button-primary"></p-splitButton>
+                    </div>
+                </ng-template>
+
+            </p-toolbar>
+        </div>
+    </div>

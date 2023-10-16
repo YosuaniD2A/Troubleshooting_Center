@@ -1,0 +1,88 @@
+<div class="grid">
+    
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <h1>Change Broken Images</h1>
+        </div>
+    </div>
+
+    <div class="col-12">      
+        <div class="card">
+            <p-toast position="top-center" key="tc"></p-toast>
+            <div class="grid ">
+                <div class="col-12 md:col-8 flex gap-5 flex-column align-items-center justify-content-start">
+                    <div class="col-12">
+                        <div class="p-inputgroup">
+                            <button type="button" pButton label="Search" (click)="search()"></button>
+                            <span class="p-float-label">
+                                <input type="text" pInputText inputId="inputgroup"
+                                    [(ngModel)]="design" />
+                                    <label for="inputgroup">Design</label>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="col-12 py-0" *ngIf="artsList.length == 0">
+                        <p-messages [(value)]="messagesInfo" [enableService]="false" [closable]="false"></p-messages>
+                    </div>
+
+                    <div class="col-12 card" *ngIf="artsList.length > 0">
+                        <p-table [value]="artsList" [(selection)]="selectedArt" dataKey="id"
+                            [tableStyle]="{'min-width': '50rem'}">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th style="width: 4rem" alignFrozen="left" pFrozenColumn [frozen]="true"></th>
+                                    <th>Art</th>
+                                    <th>Image</th>
+                                    <th>Url</th>
+                                    <th>Date</th>
+                                    <th>Pod</th>
+                                    <th>Status</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-art>
+                                <tr>
+                                    <td alignFrozen="left" pFrozenColumn [frozen]="true">
+                                        <p-tableRadioButton [value]="art"></p-tableRadioButton>
+                                    </td>
+                                    <td>{{art.art}}</td>
+                                    <td><img [src]= "art.url" alt="" width="70" class="shadow-4 p-2 bg-bluegray-200"
+                                        onerror="this.onerror=null; this.src='../assets/demo/images/Simple-Image-Not-Found-Icon.png';" /></td>
+                                    <td>{{art.url}}</td>
+                                    <td>{{dataFromString(art.upload_date)}}</td>
+                                    <td>{{art.pod}}</td>
+                                    <td>{{art.status}}</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-4 flex gap-5 flex-column align-items-center justify-content-start">
+                    <div class="col-12">
+                        <div class="p-inputgroup">
+                            <span class="p-inputgroup-addon">
+                                <i class="pi pi-image"></i>
+                            </span>
+                            <span class="p-float-label">
+                                <input type="text" inputId="inputgroup" pInputText [(ngModel)]="imageUrl">
+                                <label for="inputgroup">Image URL</label>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex justify-content-center w-full">
+                        <p-image styleClass="shadow-4 p-2 bg-bluegray-200" [src]="(imageUrl == '')? '/assets/demo/images/imageEmpty.png' : imgDownloable(imageUrl)" alt="Image" 
+                            width="100%" [preview]="true"></p-image>
+                            <!-- GD00010171METSA -->
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="my-2">
+                        <button pButton pRipple label="Change" icon="pi pi-sync" [disabled]="(selectedArt.id == '' || imageUrl == '')" (click)="change()" class="p-button-primary"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
